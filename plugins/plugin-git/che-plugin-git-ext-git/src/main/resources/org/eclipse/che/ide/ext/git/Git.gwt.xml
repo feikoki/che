@@ -23,6 +23,7 @@
     <inherits name="org.eclipse.che.ide.Core"/>
     <inherits name="org.eclipse.che.api.git.Git"/>
     <inherits name="org.eclipse.che.ide.ui.CodenvyUI"/>
+    <inherits name="org.eclipse.che.ide.editor.orion.OrionEditor"/>
 
     <source path="client"/>
 </module>

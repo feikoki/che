@@ -104,6 +104,7 @@ import org.eclipse.che.requirejs.ModuleHolder;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -149,6 +150,7 @@ public class OrionEditorWidget extends Composite implements EditorWidget,
     private OrionEditorOverlay     editorOverlay;
     private String                 modeName;
     private OrionExtRulerOverlay   orionLineNumberRuler;
+    private OrionExtRulerOverlay   vcsOrionLineNumberRuler;
     /** Component that handles undo/redo. */
     private HandlesUndoRedo        undoRedo;
 
@@ -231,6 +233,17 @@ public class OrionEditorWidget extends Composite implements EditorWidget,
         return new OrionBreakpointRuler(orionLineNumberRuler, editorOverlay);
     }
 
+    private Gutter initVcsMarksRuller(ModuleHolder moduleHolder) {
+        JavaScriptObject orionEventTargetModule = moduleHolder.getModule("OrionEventTarget");
+
+        OrionExtRulerOverlay[] rulers = editorOverlay.getTextView().getRulers();
+        vcsOrionLineNumberRuler = editorOverlay.getTextView().getRulers()[2];
+        vcsOrionLineNumberRuler.overrideOnClickEvent();
+        OrionEventTargetOverlay.addMixin(orionEventTargetModule, vcsOrionLineNumberRuler);
+
+        return new OrionVcsMarksRuler(vcsOrionLineNumberRuler, editorOverlay);
+    }
+
     @Override
     public String getValue() {
         return editorOverlay.getText();
@@ -311,6 +324,11 @@ public class OrionEditorWidget extends Composite implements EditorWidget,
     @Override
     public void markDirty() {
         this.editorOverlay.setDirty(true);
+    }
+
+    @Override
+    public ModuleHolder getModuleHolder() {
+        return moduleHolder;
     }
 
     private void selectKeyMode(Keymap keymap) {

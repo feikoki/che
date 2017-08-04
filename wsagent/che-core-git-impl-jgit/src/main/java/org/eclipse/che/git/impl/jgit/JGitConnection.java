@@ -58,6 +58,7 @@ import org.eclipse.che.api.git.params.TagCreateParams;
 import org.eclipse.che.api.git.shared.AddRequest;
 import org.eclipse.che.api.git.shared.Branch;
 import org.eclipse.che.api.git.shared.DiffCommitFile;
+import org.eclipse.che.api.git.shared.Edition;
 import org.eclipse.che.api.git.shared.GitUser;
 import org.eclipse.che.api.git.shared.MergeResult;
 import org.eclipse.che.api.git.shared.ProviderInfo;
@@ -73,6 +74,7 @@ import org.eclipse.che.api.git.shared.Status;
 import org.eclipse.che.api.git.shared.StatusFormat;
 import org.eclipse.che.api.git.shared.Tag;
 import org.eclipse.che.commons.annotation.Nullable;
+import org.eclipse.che.commons.lang.Pair;
 import org.eclipse.che.plugin.ssh.key.script.SshKeyProvider;
 import org.eclipse.che.commons.proxy.ProxyAuthenticator;
 import org.eclipse.jgit.api.AddCommand;
@@ -104,7 +106,9 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.diff.DiffFormatter;
+import org.eclipse.jgit.diff.EditList;
 import org.eclipse.jgit.dircache.DirCache;
+import org.eclipse.jgit.dircache.DirCacheIterator;
 import org.eclipse.jgit.lib.BatchingProgressMonitor;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Constants;
@@ -119,6 +123,7 @@ import org.eclipse.jgit.lib.RepositoryCache;
 import org.eclipse.jgit.lib.RepositoryState;
 import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.merge.ResolveMerger;
+import org.eclipse.jgit.patch.HunkHeader;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevObject;
 import org.eclipse.jgit.revwalk.RevTag;
@@ -138,6 +143,7 @@ import org.eclipse.jgit.transport.URIish;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
 import org.eclipse.jgit.treewalk.CanonicalTreeParser;
 import org.eclipse.jgit.treewalk.EmptyTreeIterator;
+import org.eclipse.jgit.treewalk.FileTreeIterator;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
@@ -145,6 +151,7 @@ import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.util.FS;
 import org.eclipse.jgit.util.FileUtils;
+import org.eclipse.jgit.util.io.DisabledOutputStream;
 import org.eclipse.jgit.util.io.NullOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -180,6 +187,8 @@ import static java.nio.file.attribute.PosixFilePermission.OWNER_READ;
 import static java.nio.file.attribute.PosixFilePermission.OWNER_WRITE;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
 import static org.eclipse.che.api.git.shared.BranchListMode.LIST_ALL;
 import static org.eclipse.che.api.git.shared.BranchListMode.LIST_LOCAL;
 import static org.eclipse.che.api.git.shared.BranchListMode.LIST_REMOTE;
@@ -653,6 +662,37 @@ class JGitConnection implements GitConnection {
     @Override
     public DiffPage diff(DiffParams params) throws GitException {
         return new JGitDiffPage(params, repository);
+    }
+
+    @Override
+    public List<Edition> getDifferentLines(String file) throws GitException {
+        DirCache dirCache = null;
+        try {
+            dirCache = getRepository().lockDirCache();
+            DiffFormatter formatter = new DiffFormatter(DisabledOutputStream.INSTANCE);
+            formatter.setRepository(repository);
+
+            Optional<DiffEntry> optional = formatter.scan(new DirCacheIterator(dirCache), new FileTreeIterator(repository))
+                                                    .stream()
+                                                    .filter(entry -> file.equals(entry.getNewPath()))
+                                                    .findAny();
+            if (optional.isPresent()) {
+                EditList edits = formatter.toFileHeader(optional.get()).getHunks().get(0).toEditList();
+                return edits.stream()
+                            .map(edit -> newDto(Edition.class).withBeginLine(edit.getEndA() + 1)
+                                                              .withEndLine(edit.getEndB())
+                                                              .withType(edit.getType().toString()))
+                            .collect(toList());
+            }
+
+        } catch (IOException e) {
+            throw new GitException(e.getMessage());
+        } finally {
+            if (dirCache != null) {
+                dirCache.unlock();
+            }
+        }
+        return null;
     }
 
     @Override

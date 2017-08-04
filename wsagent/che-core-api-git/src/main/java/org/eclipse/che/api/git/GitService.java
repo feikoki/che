@@ -38,6 +38,7 @@ import org.eclipse.che.api.git.shared.Commiters;
 import org.eclipse.che.api.git.shared.ConfigRequest;
 import org.eclipse.che.api.git.shared.Constants;
 import org.eclipse.che.api.git.shared.DiffType;
+import org.eclipse.che.api.git.shared.Edition;
 import org.eclipse.che.api.git.shared.FetchRequest;
 import org.eclipse.che.api.git.shared.MergeRequest;
 import org.eclipse.che.api.git.shared.MergeResult;
@@ -227,6 +228,15 @@ public class GitService {
                                                 .withCommitA(commitA)
                                                 .withCommitB(commitB)
                                                 .withCached(cached));
+        }
+    }
+
+    @GET
+    @Path("lines")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<Edition> getEdition(@QueryParam("file") String file) throws ApiException {
+        try (GitConnection gitConnection = getGitConnection()) {
+            return gitConnection.getDifferentLines(file);
         }
     }
 

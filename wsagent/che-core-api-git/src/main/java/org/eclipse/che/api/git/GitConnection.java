@@ -31,6 +31,7 @@ import org.eclipse.che.api.git.params.ResetParams;
 import org.eclipse.che.api.git.params.RmParams;
 import org.eclipse.che.api.git.params.TagCreateParams;
 import org.eclipse.che.api.git.shared.Branch;
+import org.eclipse.che.api.git.shared.Edition;
 import org.eclipse.che.api.git.shared.GitUser;
 import org.eclipse.che.api.git.shared.MergeResult;
 import org.eclipse.che.api.git.shared.PullResponse;
@@ -43,11 +44,13 @@ import org.eclipse.che.api.git.shared.ShowFileContentResponse;
 import org.eclipse.che.api.git.shared.Status;
 import org.eclipse.che.api.git.shared.StatusFormat;
 import org.eclipse.che.api.git.shared.Tag;
+import org.eclipse.che.commons.lang.Pair;
 
 import java.io.Closeable;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Connection to Git repository.
@@ -99,7 +102,7 @@ public interface GitConnection extends Closeable {
      * @param name
      *         name of the branch to delete
      * @param force
-     *          <code>true</code> if need to delete branch with force
+     *         <code>true</code> if need to delete branch with force
      * @throws UnauthorizedException
      *         if it is not possible to delete remote branch with existing credentials
      * @throws GitException
@@ -196,6 +199,17 @@ public interface GitConnection extends Closeable {
     DiffPage diff(DiffParams params) throws GitException;
 
     /**
+     * Get edited lines (added, changed, removed) of the file.
+     *
+     * @param file
+     *         path of the file
+     * @return Map that contains Pair of first and last edited line as a key, and edition type as a value
+     * @throws GitException
+     *         if any error occurs
+     */
+    List<Edition> getDifferentLines(String file) throws GitException;
+
+    /**
      * Show content of the file from specified revision or branch.
      *
      * @param file
@@ -225,7 +239,7 @@ public interface GitConnection extends Closeable {
      * Initialize new Git repository.
      *
      * @param bare
-     *          <code>true</code> to create bare repository
+     *         <code>true</code> to create bare repository
      * @throws GitException
      *         if any error occurs
      */
@@ -234,8 +248,8 @@ public interface GitConnection extends Closeable {
     /**
      * Check if directory, which was used to create Git connection, is inside the working tree.
      *
-     * @return <b>true</b> if only directory is inside working tree, and <b>false</b> if directory is outside the working tree including directory inside .git directory, or bare repository. 
-     *
+     * @return <b>true</b> if only directory is inside working tree, and <b>false</b> if directory is outside the working tree including
+     * directory inside .git directory, or bare repository.
      * @throws GitException
      *         if any error occurs
      */
@@ -270,7 +284,7 @@ public interface GitConnection extends Closeable {
      * Merge commits.
      *
      * @param commit
-     *        hash of commit to merge
+     *         hash of commit to merge
      * @return result of merge
      * @throws GitException
      *         if any error occurs

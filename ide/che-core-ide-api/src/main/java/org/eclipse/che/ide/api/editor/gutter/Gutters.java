@@ -18,6 +18,8 @@ public final class Gutters {
     /** Logical identifer for the breakpoints gutter. */
     public static final String BREAKPOINTS_GUTTER = "breakpoints";
 
+    public static final String VCS_MARKS_GUTTER = "vcsMarks";
+
     /** Logical identifer for the line number gutter. */
     public static final String LINE_NUMBERS_GUTTER = "lineNumbers";
 

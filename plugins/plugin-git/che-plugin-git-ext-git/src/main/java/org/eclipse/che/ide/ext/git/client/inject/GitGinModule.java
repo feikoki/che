@@ -15,10 +15,17 @@ import com.google.gwt.inject.client.assistedinject.GinFactoryModuleBuilder;
 import com.google.gwt.inject.client.multibindings.GinMultibinder;
 import com.google.inject.Singleton;
 
+import org.eclipse.che.ide.api.debug.BreakpointRenderer;
+import org.eclipse.che.ide.api.debug.BreakpointRendererFactory;
 import org.eclipse.che.ide.api.extension.ExtensionGinModule;
 import org.eclipse.che.ide.api.preferences.PreferencePagePresenter;
 import org.eclipse.che.ide.api.project.wizard.ImportWizardRegistrar;
+import org.eclipse.che.ide.api.vcs.VcsMarkRender;
+import org.eclipse.che.ide.api.vcs.VcsMarkRenderFactory;
+import org.eclipse.che.ide.debug.BreakpointRendererImpl;
+import org.eclipse.che.ide.ext.git.client.GitChangesHandler;
 import org.eclipse.che.ide.ext.git.client.GitCheckoutStatusNotificationHandler;
+import org.eclipse.che.ide.ext.git.client.GitMarkRender;
 import org.eclipse.che.ide.ext.git.client.add.AddToIndexView;
 import org.eclipse.che.ide.ext.git.client.add.AddToIndexViewImpl;
 import org.eclipse.che.ide.ext.git.client.branch.BranchView;
@@ -71,6 +78,10 @@ public class GitGinModule extends AbstractGinModule {
         GinMultibinder.newSetBinder(binder(), ImportWizardRegistrar.class).addBinding().to(GitImportWizardRegistrar.class);
         GinMultibinder.newSetBinder(binder(), PreferencePagePresenter.class).addBinding().to(CommitterPreferencePresenter.class);
 
+        install(new GinFactoryModuleBuilder()
+                        .implement(VcsMarkRender.class, GitMarkRender.class)
+                        .build(VcsMarkRenderFactory.class));
+
         bind(AddToIndexView.class).to(AddToIndexViewImpl.class).in(Singleton.class);
         bind(ResetToCommitView.class).to(ResetToCommitViewImpl.class).in(Singleton.class);
         bind(RemoveFromIndexView.class).to(RemoveFromIndexViewImpl.class).in(Singleton.class);
@@ -93,5 +104,6 @@ public class GitGinModule extends AbstractGinModule {
                                              .build(GitOutputConsoleFactory.class));
 
         bind(GitCheckoutStatusNotificationHandler.class).asEagerSingleton();
+        bind(GitChangesHandler.class).asEagerSingleton();
     }
 }

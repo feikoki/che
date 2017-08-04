@@ -30,5 +30,6 @@
     <inherits name="org.eclipse.che.api.git.Git"/>
 
     <inherits name="org.eclipse.che.api.user.User"/>
+    <inherits name="org.eclipse.che.Requirejs"/>
     <source path="api"/>
 </module>

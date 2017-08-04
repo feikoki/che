@@ -11,6 +11,7 @@
 package org.eclipse.che.ide.ext.git.client;
 
 import org.eclipse.che.ide.ext.git.client.importer.page.GitImporterPageViewImpl;
+
 import com.google.gwt.resources.client.ClientBundle;
 import com.google.gwt.resources.client.CssResource;
 
@@ -34,11 +35,21 @@ public interface GitResources extends ClientBundle {
         String spacing();
     }
 
+    interface AddedCSS extends CssResource{
+        String markAdded();
+
+        String inactive();
+
+        String active();
+    }
+
     @Source({"importer/page/GitImporterPage.css", "org/eclipse/che/ide/api/ui/style.css"})
     GitImporterPageViewImpl.Style gitImporterPageStyle();
 
     @Source({"git.css", "org/eclipse/che/ide/api/ui/style.css"})
     GitCSS gitCSS();
+    @Source({"added.css", "org/eclipse/che/ide/api/ui/style.css"})
+    AddedCSS addedCSS();
 
     @Source("push/arrow.svg")
     SVGResource arrow();
