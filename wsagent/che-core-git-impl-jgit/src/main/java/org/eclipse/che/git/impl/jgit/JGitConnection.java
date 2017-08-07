@@ -679,7 +679,7 @@ class JGitConnection implements GitConnection {
             if (optional.isPresent()) {
                 EditList edits = formatter.toFileHeader(optional.get()).getHunks().get(0).toEditList();
                 return edits.stream()
-                            .map(edit -> newDto(Edition.class).withBeginLine(edit.getEndA() + 1)
+                            .map(edit -> newDto(Edition.class).withBeginLine(edit.getBeginB() + 1)
                                                               .withEndLine(edit.getEndB())
                                                               .withType(edit.getType().toString()))
                             .collect(toList());

@@ -10,7 +10,10 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ext.git.client;
 
+import com.google.web.bindery.event.shared.EventBus;
+
 import org.eclipse.che.api.core.jsonrpc.commons.RequestHandlerConfigurator;
+import org.eclipse.che.api.git.shared.Edition;
 import org.eclipse.che.api.git.shared.GitChangeEventDto;
 import org.eclipse.che.api.git.shared.Status;
 import org.eclipse.che.api.git.shared.Tag;
@@ -24,6 +27,10 @@ import org.eclipse.che.ide.api.resources.Resource;
 import org.eclipse.che.ide.api.vcs.HasVcsMarkRender;
 import org.eclipse.che.ide.api.vcs.VcsMarkRender;
 import org.eclipse.che.ide.api.vcs.VcsStatus;
+import org.eclipse.che.ide.editor.orion.client.OrionEditorPresenter;
+import org.eclipse.che.ide.editor.orion.client.OrionEditorWidget;
+import org.eclipse.che.ide.editor.orion.client.events.ChangedEvent;
+import org.eclipse.che.ide.editor.orion.client.events.ChangedHandler;
 import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.resource.Path;
 import org.eclipse.che.ide.resources.tree.FileNode;
@@ -33,6 +40,8 @@ import org.eclipse.che.ide.ui.smartTree.Tree;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
+
+import java.util.List;
 
 import static org.eclipse.che.ide.api.vcs.VcsStatus.ADDED;
 import static org.eclipse.che.ide.api.vcs.VcsStatus.MODIFIED;
@@ -115,7 +124,7 @@ public class GitChangesHandler {
                                           .filter(edition -> "INSERT".equals(edition.getType()))
                                           .forEach(edition -> {
                                               for (int i = edition.getBeginLine(); i <= edition.getEndLine(); i++) {
-                                                  arg.addVcsMark(i + 1);
+                                                  arg.addVcsMark(i - 1);
                                               }
                                           });
                                    }

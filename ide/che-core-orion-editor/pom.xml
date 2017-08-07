@@ -93,6 +93,11 @@
             <artifactId>gin</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.eclipse.che.core</groupId>
+            <artifactId>che-core-orion-editor</artifactId>
+            <version>5.16.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
     <build>
         <resources>

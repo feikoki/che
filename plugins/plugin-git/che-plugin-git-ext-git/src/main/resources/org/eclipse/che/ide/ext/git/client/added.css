@@ -30,9 +30,7 @@
 
 .markAdded {
     position: relative;
-    font-family: "DejaVu Sans Mono", alternativeFontFamily;
     font-size: 11px;
-    color: editorGutterLineNumberColor;
     line-height: 15px;
 }
 

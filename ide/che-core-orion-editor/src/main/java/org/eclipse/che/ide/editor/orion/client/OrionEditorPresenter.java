@@ -122,6 +122,7 @@ import org.eclipse.che.ide.api.selection.Selection;
 import org.eclipse.che.ide.api.vcs.HasVcsMarkRender;
 import org.eclipse.che.ide.api.vcs.VcsMarkRender;
 import org.eclipse.che.ide.api.vcs.VcsMarkRenderFactory;
+import org.eclipse.che.ide.editor.orion.client.events.ChangedEvent;
 import org.eclipse.che.ide.editor.orion.client.jso.OrionExtRulerOverlay;
 import org.eclipse.che.ide.editor.orion.client.jso.OrionLinkedModelDataOverlay;
 import org.eclipse.che.ide.editor.orion.client.jso.OrionLinkedModelGroupOverlay;
@@ -215,6 +216,8 @@ public class OrionEditorPresenter extends AbstractEditorPresenter implements Tex
     private TextPosition             cursorPosition;
     private HandlerRegistration      resourceChangeHandler;
     private OrionEditorInit          editorInit;
+
+    private VcsMarkRender vcsMarkRender;
 
     @Inject
     public OrionEditorPresenter(final CodeAssistantFactory codeAssistantFactory,
@@ -679,7 +682,7 @@ public class OrionEditorPresenter extends AbstractEditorPresenter implements Tex
                     stream(editorWidget.getTextView().getRulers()).filter(ruler -> "git".equals(ruler.getStyle().getStyleClass()))
                                                                   .findAny();
             if (optional.isPresent()) {
-                resolve.apply(optional.get().cast());
+                resolve.apply(vcsMarkRender);
             } else {
                 OrionStyleOverlay style = OrionStyleOverlay.create();
                 style.setStyleClass("git");
@@ -691,9 +694,11 @@ public class OrionEditorPresenter extends AbstractEditorPresenter implements Tex
                                                 editorWidget.getTextView().addRuler(orionExtRulerOverlay, 6);
                                                 OrionVcsMarksRuler orionVcsMarksRuler = new OrionVcsMarksRuler(orionExtRulerOverlay,
                                                                                                                editorWidget.getEditor());
-                                                resolve.apply(vcsMarkRenderFactory.create(orionVcsMarksRuler,
-                                                                                          editorWidget.getLineStyler(),
-                                                                                          document));
+
+                                                vcsMarkRender = vcsMarkRenderFactory.create(orionVcsMarksRuler,
+                                                                                            editorWidget.getLineStyler(),
+                                                                                            document);
+                                                resolve.apply(vcsMarkRender);
                                             });
             }
         });
@@ -864,6 +869,11 @@ public class OrionEditorPresenter extends AbstractEditorPresenter implements Tex
     @Override
     public void editorCursorPositionChanged() {
         this.editorView.updateInfoPanelPosition(this.document.getCursorPosition());
+    }
+
+    @Override
+    public void onChanged() {
+        generalEventBus.fireEvent(new ChangedEvent(this));
     }
 
     @Override

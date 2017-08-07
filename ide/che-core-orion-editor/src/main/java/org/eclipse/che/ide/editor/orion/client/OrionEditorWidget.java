@@ -70,6 +70,7 @@ import org.eclipse.che.ide.api.event.SelectionChangedEvent;
 import org.eclipse.che.ide.api.event.SelectionChangedHandler;
 import org.eclipse.che.ide.api.hotkeys.HotKeyItem;
 import org.eclipse.che.ide.api.preferences.PreferencesManager;
+import org.eclipse.che.ide.editor.orion.client.events.ChangedEvent;
 import org.eclipse.che.ide.editor.orion.client.events.HasScrollHandlers;
 import org.eclipse.che.ide.editor.orion.client.events.ScrollEvent;
 import org.eclipse.che.ide.editor.orion.client.events.ScrollHandler;
@@ -83,12 +84,14 @@ import org.eclipse.che.ide.editor.orion.client.jso.OrionContentAssistOverlay;
 import org.eclipse.che.ide.editor.orion.client.jso.OrionEditorOptionsOverlay;
 import org.eclipse.che.ide.editor.orion.client.jso.OrionEditorOverlay;
 import org.eclipse.che.ide.editor.orion.client.jso.OrionEditorViewOverlay;
+import org.eclipse.che.ide.editor.orion.client.jso.OrionEventOverlay;
 import org.eclipse.che.ide.editor.orion.client.jso.OrionEventTargetOverlay;
 import org.eclipse.che.ide.editor.orion.client.jso.OrionExtRulerOverlay;
 import org.eclipse.che.ide.editor.orion.client.jso.OrionInputChangedEventOverlay;
 import org.eclipse.che.ide.editor.orion.client.jso.OrionKeyBindingsRelationOverlay;
 import org.eclipse.che.ide.editor.orion.client.jso.OrionKeyModeOverlay;
 import org.eclipse.che.ide.editor.orion.client.jso.OrionKeyStrokeOverlay;
+import org.eclipse.che.ide.editor.orion.client.jso.OrionModelChangedEventOverlay;
 import org.eclipse.che.ide.editor.orion.client.jso.OrionRulerClickEventOverlay;
 import org.eclipse.che.ide.editor.orion.client.jso.OrionSelectionOverlay;
 import org.eclipse.che.ide.editor.orion.client.jso.OrionStyleOverlay;
@@ -104,7 +107,6 @@ import org.eclipse.che.requirejs.ModuleHolder;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -150,7 +152,6 @@ public class OrionEditorWidget extends Composite implements EditorWidget,
     private OrionEditorOverlay     editorOverlay;
     private String                 modeName;
     private OrionExtRulerOverlay   orionLineNumberRuler;
-    private OrionExtRulerOverlay   vcsOrionLineNumberRuler;
     /** Component that handles undo/redo. */
     private HandlesUndoRedo        undoRedo;
 
@@ -231,17 +232,6 @@ public class OrionEditorWidget extends Composite implements EditorWidget,
         OrionEventTargetOverlay.addMixin(orionEventTargetModule, orionLineNumberRuler);
 
         return new OrionBreakpointRuler(orionLineNumberRuler, editorOverlay);
-    }
-
-    private Gutter initVcsMarksRuller(ModuleHolder moduleHolder) {
-        JavaScriptObject orionEventTargetModule = moduleHolder.getModule("OrionEventTarget");
-
-        OrionExtRulerOverlay[] rulers = editorOverlay.getTextView().getRulers();
-        vcsOrionLineNumberRuler = editorOverlay.getTextView().getRulers()[2];
-        vcsOrionLineNumberRuler.overrideOnClickEvent();
-        OrionEventTargetOverlay.addMixin(orionEventTargetModule, vcsOrionLineNumberRuler);
-
-        return new OrionVcsMarksRuler(vcsOrionLineNumberRuler, editorOverlay);
     }
 
     @Override
@@ -411,6 +401,7 @@ public class OrionEditorWidget extends Composite implements EditorWidget,
 
                 @Override
                 public void onEvent() {
+                    int start = getDocument().getCursorPosition().getLine();
                     fireChangeEvent();
                 }
             });

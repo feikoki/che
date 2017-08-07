@@ -8,33 +8,10 @@
  * Contributors:
  *   Codenvy, S.A. - initial API and implementation
  *******************************************************************************/
-package org.eclipse.che.api.git.shared;
+package org.eclipse.che.ide.editor.orion.client.events;
 
-import org.eclipse.che.dto.shared.DTO;
+import com.google.gwt.event.shared.EventHandler;
 
-@DTO
-public interface Edition {
-    int getBeginLine();
-
-    void setBeginLine(int startLine);
-
-    Edition withBeginLine(int startLine);
-
-    int getEndLine();
-
-    void setEndLine(int endLine);
-
-    Edition withEndLine(int endLine);
-
-//    int[] getLines();
-//
-//    void setLines(int[] lines);
-//
-//    Edition withLines(int[] lines);
-
-    String getType();
-
-    void setType(String type);
-
-    Edition withType(String type);
+public interface ChangedHandler extends EventHandler {
+    void onChanged(ChangedEvent event);
 }
