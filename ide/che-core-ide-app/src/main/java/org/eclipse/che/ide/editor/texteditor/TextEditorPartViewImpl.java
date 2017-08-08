@@ -15,6 +15,8 @@ import elemental.dom.Element;
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
+import com.google.gwt.event.dom.client.ChangeEvent;
+import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.uibinder.client.UiBinder;
@@ -39,7 +41,7 @@ import org.eclipse.che.ide.api.editor.text.TextPosition;
 
 /**
  * Implementation of the View part of the editors.
- * 
+ *
  * @author "Mickaël Leduque"
  */
 public class TextEditorPartViewImpl extends Composite implements TextEditorPartView {
@@ -77,7 +79,7 @@ public class TextEditorPartViewImpl extends Composite implements TextEditorPartV
     @Override
     public void showCompletionProposals(final EditorWidget editorWidget, final CompletionsSource source) {
         editorWidget.showCompletionProposals(source, new AdditionalInfoCallback() {
-            
+
             @Override
             public Element onAdditionalInfoNeeded(final float pixelX, final float pixelY, final Element infoWidget) {
                 final AdditionalInformationWidget popup = new AdditionalInformationWidget(popupResources);
@@ -104,7 +106,9 @@ public class TextEditorPartViewImpl extends Composite implements TextEditorPartV
 
     /**
      * Sets the additional infos popup resource.
-     * @param popupResources the resource
+     *
+     * @param popupResources
+     *         the resource
      */
     @Inject
     public void setPopupResource(final PopupResources popupResources) {
@@ -134,6 +138,12 @@ public class TextEditorPartViewImpl extends Composite implements TextEditorPartV
             @Override
             public void onFocus(final FocusEvent event) {
                 delegate.editorGotFocus();
+            }
+        });
+        editorWidget.addChangeHandler(new ChangeHandler() {
+            @Override
+            public void onChange(ChangeEvent changeEvent) {
+                delegate.onChanged(editorWidget.getDocument().getCursorPosition().getLine());
             }
         });
     }
@@ -176,7 +186,7 @@ public class TextEditorPartViewImpl extends Composite implements TextEditorPartV
 
     /**
      * UI binder interface for this component.
-     * 
+     *
      * @author "Mickaël Leduque"
      */
     interface EditorViewUiBinder extends UiBinder<HTMLPanel, TextEditorPartViewImpl> {

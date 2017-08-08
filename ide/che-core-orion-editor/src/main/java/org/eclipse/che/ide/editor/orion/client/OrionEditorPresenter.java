@@ -872,7 +872,7 @@ public class OrionEditorPresenter extends AbstractEditorPresenter implements Tex
     }
 
     @Override
-    public void onChanged() {
+    public void onChanged(int line) {
         generalEventBus.fireEvent(new ChangedEvent(this));
     }
 

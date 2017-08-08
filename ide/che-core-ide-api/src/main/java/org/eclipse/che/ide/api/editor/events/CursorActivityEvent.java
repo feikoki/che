@@ -30,5 +30,4 @@ public class CursorActivityEvent extends GwtEvent<CursorActivityHandler> {
     protected void dispatch(final CursorActivityHandler handler) {
         handler.onCursorActivity(this);
     }
-
 }

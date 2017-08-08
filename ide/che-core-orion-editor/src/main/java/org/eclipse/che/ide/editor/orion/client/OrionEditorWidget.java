@@ -401,7 +401,6 @@ public class OrionEditorWidget extends Composite implements EditorWidget,
 
                 @Override
                 public void onEvent() {
-                    int start = getDocument().getCursorPosition().getLine();
                     fireChangeEvent();
                 }
             });

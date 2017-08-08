@@ -62,12 +62,20 @@ public class GitChangesHandler {
 
     @Inject
     public GitChangesHandler(RequestHandlerConfigurator configurator,
+                             EventBus eventBus,
                              Provider<EditorAgent> editorAgentProvider,
                              Provider<ProjectExplorerPresenter> projectExplorerPresenterProvider,
                              Provider<EditorMultiPartStack> multiPartStackProvider) {
         this.editorAgentProvider = editorAgentProvider;
         this.projectExplorerPresenterProvider = projectExplorerPresenterProvider;
         this.multiPartStackProvider = multiPartStackProvider;
+
+        eventBus.addHandler(ChangedEvent.TYPE, new ChangedHandler() {
+            @Override
+            public void onChanged(ChangedEvent event) {
+//                event.
+            }
+        });
 
         configureHandler(configurator);
     }
