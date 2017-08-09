@@ -23,6 +23,10 @@ import com.google.gwt.event.dom.client.DomEvent;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
 import com.google.gwt.event.dom.client.HasChangeHandlers;
+import com.google.gwt.event.dom.client.HasKeyPressHandlers;
+import com.google.gwt.event.dom.client.KeyPressEvent;
+import com.google.gwt.event.dom.client.KeyPressHandler;
+import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.uibinder.client.UiBinder;
@@ -213,6 +217,9 @@ public class OrionEditorWidget extends Composite implements EditorWidget,
 
         incrementalFindObserver.setEditorWidget(this);
         statusMessageReporter.registerObserver(incrementalFindObserver);
+
+        this.addDomHandler(keyPressEvent -> {
+        }, KeyUpEvent.getType());
 
         registerPromptFunction();
     }
@@ -729,6 +736,7 @@ public class OrionEditorWidget extends Composite implements EditorWidget,
                                                position.getOffset() + position.getLength(),
                                                annotation.getText());
     }
+
     private String getSeverity(String type, OrionAnnotationSeverityProvider provider) {
         if (provider != null) {
             return provider.getSeverity(type);
