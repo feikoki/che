@@ -9,15 +9,13 @@
  *   Codenvy, S.A. - initial API and implementation
  */
 'use strict';
-import {CheEnvironmentRegistry} from '../../../components/api/environment/che-environment-registry.factory';
+
 import {CheNotification} from '../../../components/notification/che-notification.factory';
-import {CheWorkspace} from '../../../components/api/che-workspace.factory';
-import IdeSvc from '../../ide/ide.service';
+import {CheWorkspace, WorkspaceStatus} from '../../../components/api/che-workspace.factory';
 import {WorkspaceDetailsService} from './workspace-details.service';
 import {CheNamespaceRegistry} from '../../../components/api/namespace/che-namespace-registry.factory';
 import {ConfirmDialogService} from '../../../components/service/confirm-dialog/confirm-dialog.service';
 import {CheUser} from '../../../components/api/che-user.factory';
-
 
 /**
  * @ngdoc controller
@@ -37,17 +35,15 @@ export class WorkspaceDetailsController {
   $route: ng.route.IRouteService;
   $rootScope: ng.IRootScopeService;
   $scope: ng.IScope;
-  $timeout: ng.ITimeoutService;
   lodash: any;
-  cheEnvironmentRegistry: CheEnvironmentRegistry;
   cheNotification: CheNotification;
   cheWorkspace: CheWorkspace;
   cheNamespaceRegistry: CheNamespaceRegistry;
-  ideSvc: IdeSvc;
   workspaceDetailsService: WorkspaceDetailsService;
   cheUser: CheUser;
 
   loading: boolean = false;
+  saving: boolean = false;
   isCreationFlow: boolean = true;
   selectedTabIndex: number;
 
@@ -60,12 +56,13 @@ export class WorkspaceDetailsController {
   workspaceName: string = '';
   newName: string = '';
   stackId: string = '';
-  workspaceDetails: any = {};
-  originWorkspaceDetails: any = {};
+  workspaceDetails: che.IWorkspace = null;
+  originWorkspaceDetails: che.IWorkspace = null;
   machinesViewStatus: any = {};
   errorMessage: string = '';
   invalidWorkspace: string = '';
   editMode: boolean = false;
+  editModeMessage: string = '';
   showApplyMessage: boolean = false;
   workspaceImportedRecipe: che.IRecipe;
 
@@ -81,9 +78,9 @@ export class WorkspaceDetailsController {
    * @ngInject for Dependency injection
    */
   constructor($location: ng.ILocationService, $log: ng.ILogService, $mdDialog: ng.material.IDialogService, $q: ng.IQService,
-              $route: ng.route.IRouteService, $rootScope: ng.IRootScopeService, $scope: ng.IScope, $timeout: ng.ITimeoutService,
-              cheEnvironmentRegistry: CheEnvironmentRegistry, cheNotification: CheNotification, cheWorkspace: CheWorkspace,
-              ideSvc: IdeSvc, workspaceDetailsService: WorkspaceDetailsService, cheNamespaceRegistry: CheNamespaceRegistry,
+              $route: ng.route.IRouteService, $rootScope: ng.IRootScopeService, $scope: ng.IScope,
+              cheNotification: CheNotification, cheWorkspace: CheWorkspace,
+              workspaceDetailsService: WorkspaceDetailsService, cheNamespaceRegistry: CheNamespaceRegistry,
               confirmDialogService: ConfirmDialogService, lodash: any, cheUser: CheUser) {
     this.$log = $log;
     this.$location = $location;
@@ -92,12 +89,9 @@ export class WorkspaceDetailsController {
     this.$route = $route;
     this.$rootScope = $rootScope;
     this.$scope = $scope;
-    this.$timeout = $timeout;
-    this.cheEnvironmentRegistry = cheEnvironmentRegistry;
     this.cheNotification = cheNotification;
     this.cheWorkspace = cheWorkspace;
     this.cheNamespaceRegistry = cheNamespaceRegistry;
-    this.ideSvc = ideSvc;
     this.workspaceDetailsService = workspaceDetailsService;
     this.confirmDialogService = confirmDialogService;
     this.lodash = lodash;
@@ -106,7 +100,7 @@ export class WorkspaceDetailsController {
     this.init();
 
     const workspaceStatusDeRegistrationFn = $scope.$watch(() => {
-      return this.getWorkspaceStatus();
+      return this.saving === false && this.getWorkspaceStatus();
     }, (newStatus: string, oldStatus: string) => {
       if (oldStatus === 'SNAPSHOTTING') {
         // status was not changed
@@ -132,7 +126,6 @@ export class WorkspaceDetailsController {
       workspaceStatusDeRegistrationFn();
       searchDeRegistrationFn();
     });
-
   }
 
   /**
@@ -214,7 +207,7 @@ export class WorkspaceDetailsController {
       this.workspaceDetails = {
         config: {
           environments: {
-            [this.workspaceName]: {}
+            [this.workspaceName]: ({} as che.IWorkspaceEnvironment)
           },
           defaultEnv: this.workspaceName,
           name: this.workspaceName
@@ -369,15 +362,6 @@ export class WorkspaceDetailsController {
   }
 
   /**
-   * Returns the value of workspace auto-snapshot property.
-   *
-   * @returns {boolean} workspace auto-snapshot property value
-   */
-  getAutoSnapshot(): boolean {
-    return this.cheWorkspace.getAutoSnapshotSettings();
-  }
-
-  /**
    * Fetches the workspace details.
    *
    * @returns {Promise}
@@ -410,6 +394,7 @@ export class WorkspaceDetailsController {
       this.loading = false;
     }
     this.workspaceId = this.workspaceDetails.id;
+    this.workspaceName = this.workspaceDetails.config.name;
     this.originWorkspaceDetails = angular.copy(this.workspaceDetails);
     this.switchEditMode();
   }
@@ -431,13 +416,7 @@ export class WorkspaceDetailsController {
    * @returns {string}
    */
   getWorkspaceStatus(): string {
-    if (this.isCreationFlow) {
-      return 'New';
-    }
-
-    let unknownStatus = 'unknown';
-    let workspace = this.cheWorkspace.getWorkspaceById(this.workspaceId);
-    return workspace ? workspace.status : unknownStatus;
+    return this.workspaceDetailsService.getWorkspaceStatus(this.workspaceId);
   }
 
   /**
@@ -549,60 +528,56 @@ export class WorkspaceDetailsController {
     if (!this.isCreationFlow) {
       this.editMode = !angular.equals(this.originWorkspaceDetails.config, this.workspaceDetails.config);
 
-      let status = this.getWorkspaceStatus();
-      if (status === 'STOPPED' || status === 'STOPPING') {
+      if (this.editMode === false) {
+        this.editModeMessage = '';
         this.showApplyMessage = false;
-      } else {
+        return;
+      }
+
+      this.editModeMessage = 'Changes will be applied and workspace restarted';
+      const needRunningStatus = this.workspaceDetailsService.needRunningToUpdate();
+      if (needRunningStatus) {
         this.showApplyMessage = true;
+      } else  {
+        const statusStr = this.getWorkspaceStatus();
+        this.showApplyMessage = WorkspaceStatus[statusStr] !== WorkspaceStatus.STOPPED && WorkspaceStatus[statusStr] !== WorkspaceStatus.STOPPING;
       }
     }
   }
 
+  /**
+   * Updates workspace config changes.
+   */
   saveWorkspace(): void {
     if (this.isCreationFlow) {
       this.createWorkspace();
     } else {
-      this.applyConfigChanges();
-    }
-  }
+      this.editMode = false;
+      this.showApplyMessage = false;
 
-  /**
-   * Updates workspace config and restarts workspace if it's necessary
-   */
-  applyConfigChanges(): void {
-    this.editMode = false;
-    this.showApplyMessage = false;
+      this.saving = true;
+      this.loading = true;
+      this.$scope.$broadcast('edit-workspace-details', {status: 'saving'});
 
-    let status = this.getWorkspaceStatus();
+      this.workspaceDetailsService.applyChanges(this.originWorkspaceDetails, this.workspaceDetails).then((data: any) => {
+        this.cheNotification.showInfo('Workspace updated.');
+        this.$scope.$broadcast('edit-workspace-details', {status: 'saved'});
 
-    if (status !== 'RUNNING' && status !== 'STARTING') {
-      this.doUpdateWorkspace();
-      return;
-    }
+        this.saving = false;
+        this.loading = false;
 
-    this.selectedTabIndex = 0;
-    this.loading = true;
+        this.workspaceDetails = this.cheWorkspace.getWorkspaceByName(this.namespaceId, this.workspaceName);
+        this.updateWorkspaceData();
 
-    let stoppedStatusPromise = this.cheWorkspace.fetchStatusChange(this.workspaceId, 'STOPPED');
-    if (status === 'RUNNING') {
-      this.stopWorkspace();
-      stoppedStatusPromise.then(() => {
-        return this.doUpdateWorkspace();
-      }).then(() => {
-        this.runWorkspace();
-      });
-      return;
-    }
+        this.$location.path('/workspace/' + this.namespaceId + '/' + this.workspaceName).search({tab: this.tab[this.selectedTabIndex]});
+      }, (error: any) => {
+        this.$scope.$broadcast('edit-workspace-details', {status: 'failed'});
+        this.cheNotification.showError('Update workspace failed.', error);
 
-    let runningStatusPromise = this.cheWorkspace.fetchStatusChange(this.workspaceId, 'RUNNING');
-    if (status === 'STARTING') {
-      runningStatusPromise.then(() => {
-        this.stopWorkspace();
-        return stoppedStatusPromise;
-      }).then(() => {
-        return this.doUpdateWorkspace();
-      }).then(() => {
-        this.runWorkspace();
+        this.switchEditMode();
+
+        this.saving = false;
+        this.loading = false;
       });
     }
   }
@@ -615,31 +590,10 @@ export class WorkspaceDetailsController {
       this.$location.path('/workspaces');
     }
     this.workspaceDetails = angular.copy(this.originWorkspaceDetails);
+
     this.updateWorkspaceData();
-  }
 
-  /**
-   * Updates workspace info.
-   *
-   * @returns {ng.IPromise<any>}
-   */
-  doUpdateWorkspace(): ng.IPromise<any> {
-    delete this.workspaceDetails.links;
-
-    let promise = this.cheWorkspace.updateWorkspace(this.workspaceId, this.workspaceDetails);
-    promise.then((data: any) => {
-      this.workspaceName = data.config.name;
-      this.workspaceDetails = this.cheWorkspace.getWorkspaceByName(this.namespaceId, this.workspaceName);
-      this.updateWorkspaceData();
-      this.cheNotification.showInfo('Workspace updated.');
-      return this.$location.path('/workspace/' + this.namespaceId + '/' + this.workspaceName).search({tab: this.tab[this.selectedTabIndex]});
-    }, (error: any) => {
-      this.loading = false;
-      this.cheNotification.showError('Update workspace failed.', error);
-      this.$log.error(error);
-    });
-
-    return promise;
+    this.$scope.$broadcast('edit-workspace-details', {status: 'cancelled'});
   }
 
   /**
@@ -727,50 +681,16 @@ export class WorkspaceDetailsController {
     return promise;
   }
 
-  runWorkspace(): void {
+  runWorkspace(): ng.IPromise<any> {
     this.errorMessage = '';
 
-    let promise = this.ideSvc.startIde(this.workspaceDetails);
-    promise.catch((error: any) => {
-      let errorMessage;
-
-      if (!error || !(error.data || error.error)) {
-        errorMessage = 'Unable to start this workspace.';
-      } else if (error.error) {
-        errorMessage = error.error;
-      } else if (error.data.errorCode === 10000 && error.data.attributes) {
-        let attributes = error.data.attributes;
-
-        errorMessage = 'Unable to start this workspace.' +
-          ' There are ' + attributes.workspaces_count + ' running workspaces consuming ' +
-          attributes.used_ram + attributes.ram_unit + ' RAM.' +
-          ' Your current RAM limit is ' + attributes.limit_ram + attributes.ram_unit +
-          '. This workspace requires an additional ' +
-          attributes.required_ram + attributes.ram_unit + '.' +
-          '  You can stop other workspaces to free resources.';
-      } else {
-        errorMessage = error.data.message;
-      }
-
-      this.cheNotification.showError(errorMessage);
-      this.$log.error(error);
-
-      this.errorMessage = errorMessage;
+    return this.workspaceDetailsService.runWorkspace(this.workspaceDetails).catch((error: any) => {
+      this.errorMessage = error.message;
     });
   }
 
-  stopWorkspace(isCreateSnapshot?: boolean): void {
-    if (this.getWorkspaceStatus() === 'STARTING') {
-      isCreateSnapshot = false;
-    } else if (!isCreateSnapshot) {
-      isCreateSnapshot = this.getAutoSnapshot();
-    }
-    let promise = this.cheWorkspace.stopWorkspace(this.workspaceId, isCreateSnapshot);
-
-    promise.catch((error: any) => {
-      this.cheNotification.showError('Stop workspace failed.', error);
-      this.$log.error(error);
-    });
+  stopWorkspace(isCreateSnapshot?: boolean): ng.IPromise<any> {
+    return this.workspaceDetailsService.stopWorkspace(this.workspaceDetails.id, isCreateSnapshot);
   }
 
   /**
@@ -870,5 +790,6 @@ export class WorkspaceDetailsController {
     const namespaces = this.cheNamespaceRegistry.getNamespaces();
     return this.isCreationFlow && (!namespaces || namespaces.length === 0) && this.cheNamespaceRegistry.getEmptyMessage() !== null;
   }
+
 }
 
