@@ -13,10 +13,8 @@ package org.eclipse.che.ide.ext.git.client;
 import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.core.jsonrpc.commons.RequestHandlerConfigurator;
-import org.eclipse.che.api.git.shared.Edition;
 import org.eclipse.che.api.git.shared.GitChangeEventDto;
 import org.eclipse.che.api.git.shared.Status;
-import org.eclipse.che.api.git.shared.Tag;
 import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.ide.api.editor.EditorAgent;
@@ -27,10 +25,8 @@ import org.eclipse.che.ide.api.resources.Resource;
 import org.eclipse.che.ide.api.vcs.HasVcsMarkRender;
 import org.eclipse.che.ide.api.vcs.VcsMarkRender;
 import org.eclipse.che.ide.api.vcs.VcsStatus;
-import org.eclipse.che.ide.editor.orion.client.OrionEditorPresenter;
-import org.eclipse.che.ide.editor.orion.client.OrionEditorWidget;
-import org.eclipse.che.ide.editor.orion.client.events.ChangedEvent;
-import org.eclipse.che.ide.editor.orion.client.events.ChangedHandler;
+import org.eclipse.che.ide.editor.orion.client.events.NewLineAddedEvent;
+import org.eclipse.che.ide.editor.orion.client.events.OnNewLineAddedHandler;
 import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.resource.Path;
 import org.eclipse.che.ide.resources.tree.FileNode;
@@ -40,8 +36,6 @@ import org.eclipse.che.ide.ui.smartTree.Tree;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
-
-import java.util.List;
 
 import static org.eclipse.che.ide.api.vcs.VcsStatus.ADDED;
 import static org.eclipse.che.ide.api.vcs.VcsStatus.MODIFIED;
@@ -70,10 +64,15 @@ public class GitChangesHandler {
         this.projectExplorerPresenterProvider = projectExplorerPresenterProvider;
         this.multiPartStackProvider = multiPartStackProvider;
 
-        eventBus.addHandler(ChangedEvent.TYPE, new ChangedHandler() {
+        eventBus.addHandler(NewLineAddedEvent.TYPE, new OnNewLineAddedHandler() {
             @Override
-            public void onChanged(ChangedEvent event) {
-//                event.
+            public void onNewLineAdded(NewLineAddedEvent event) {
+                event.getOrionEditorPresenter().getOrCreateVcsMarkRender().then(new Operation<VcsMarkRender>() {
+                    @Override
+                    public void apply(VcsMarkRender arg) throws OperationException {
+                        arg.handleEnter(event.getLine());
+                    }
+                });
             }
         });
 
@@ -127,12 +126,13 @@ public class GitChangesHandler {
                                ((HasVcsMarkRender)editor).getOrCreateVcsMarkRender().then(new Operation<VcsMarkRender>() {
                                    @Override
                                    public void apply(VcsMarkRender arg) throws OperationException {
+                                       arg.clearMarks();
                                        dto.getEditions()
                                           .stream()
                                           .filter(edition -> "INSERT".equals(edition.getType()))
                                           .forEach(edition -> {
                                               for (int i = edition.getBeginLine(); i <= edition.getEndLine(); i++) {
-                                                  arg.addVcsMark(i - 1);
+                                                  arg.addVcsMark(i);
                                               }
                                           });
                                    }

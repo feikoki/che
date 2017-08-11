@@ -12,6 +12,6 @@ package org.eclipse.che.ide.editor.orion.client.events;
 
 import com.google.gwt.event.shared.EventHandler;
 
-public interface ChangedHandler extends EventHandler {
-    void onChanged(ChangedEvent event);
+public interface OnNewLineAddedHandler extends EventHandler {
+    void onNewLineAdded(NewLineAddedEvent event);
 }

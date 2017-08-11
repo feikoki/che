@@ -13,32 +13,37 @@ package org.eclipse.che.ide.editor.orion.client.events;
 import com.google.gwt.event.shared.GwtEvent;
 
 import org.eclipse.che.ide.editor.orion.client.OrionEditorPresenter;
-import org.eclipse.che.ide.editor.orion.client.OrionEditorWidget;
 
 /**
  * Event for scrolls.
  */
-public class ChangedEvent extends GwtEvent<ChangedHandler> {
+public class NewLineAddedEvent extends GwtEvent<OnNewLineAddedHandler> {
     /** The type instance for this event. */
-    public static final Type<ChangedHandler> TYPE = new Type<>();
+    public static final Type<OnNewLineAddedHandler> TYPE = new Type<>();
     private final OrionEditorPresenter orionEditorPresenter;
+    private final int                  line;
 
 
-    public ChangedEvent(OrionEditorPresenter orionEditorPresenter) {
+    public NewLineAddedEvent(OrionEditorPresenter orionEditorPresenter, int line) {
         this.orionEditorPresenter = orionEditorPresenter;
+        this.line = line;
     }
 
     @Override
-    public Type<ChangedHandler> getAssociatedType() {
+    public Type<OnNewLineAddedHandler> getAssociatedType() {
         return TYPE;
     }
 
     @Override
-    protected void dispatch(final ChangedHandler handler) {
-        handler.onChanged(this);
+    protected void dispatch(final OnNewLineAddedHandler handler) {
+        handler.onNewLineAdded(this);
     }
 
     public OrionEditorPresenter getOrionEditorPresenter() {
         return orionEditorPresenter;
+    }
+
+    public int getLine() {
+        return line;
     }
 }

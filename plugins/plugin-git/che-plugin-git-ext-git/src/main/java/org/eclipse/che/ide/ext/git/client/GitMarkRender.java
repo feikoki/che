@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ext.git.client;
 
+import elemental.dom.Element;
 import elemental.html.DivElement;
 
 import com.google.inject.assistedinject.Assisted;
@@ -44,7 +45,18 @@ public class GitMarkRender implements VcsMarkRender {
 
     @Override
     public void addVcsMark(int lineNumber) {
-        DivElement inactiveBreakpointMark = Elements.createDivElement(resources.addedCSS().markAdded(), resources.addedCSS().active());
-        hasGutter.addGutterItem(lineNumber, VCS_MARKS_GUTTER, inactiveBreakpointMark);
+        DivElement inactiveBreakpointMark = Elements.createDivElement(resources.addedCSS().markAdded());
+        hasGutter.addGutterItem(lineNumber - 1, VCS_MARKS_GUTTER, inactiveBreakpointMark);
+    }
+
+    @Override
+    public void handleEnter(int line) {
+        Element gutterItem = hasGutter.getGutterItem(line - 2, VCS_MARKS_GUTTER);
+        hasGutter.addGutterItem(line - 1, VCS_MARKS_GUTTER, gutterItem);
+    }
+
+    @Override
+    public void clearMarks() {
+        hasGutter.clearGutter(VCS_MARKS_GUTTER);
     }
 }

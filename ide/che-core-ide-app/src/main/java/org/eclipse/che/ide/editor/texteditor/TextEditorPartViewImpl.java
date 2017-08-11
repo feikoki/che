@@ -15,10 +15,10 @@ import elemental.dom.Element;
 import com.google.gwt.core.shared.GWT;
 import com.google.gwt.event.dom.client.BlurEvent;
 import com.google.gwt.event.dom.client.BlurHandler;
-import com.google.gwt.event.dom.client.ChangeEvent;
-import com.google.gwt.event.dom.client.ChangeHandler;
 import com.google.gwt.event.dom.client.FocusEvent;
 import com.google.gwt.event.dom.client.FocusHandler;
+import com.google.gwt.event.dom.client.KeyCodes;
+import com.google.gwt.event.dom.client.KeyUpEvent;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
@@ -140,12 +140,12 @@ public class TextEditorPartViewImpl extends Composite implements TextEditorPartV
                 delegate.editorGotFocus();
             }
         });
-        editorWidget.addChangeHandler(new ChangeHandler() {
-            @Override
-            public void onChange(ChangeEvent changeEvent) {
-                delegate.onChanged(editorWidget.getDocument().getCursorPosition().getLine());
+
+        this.addDomHandler(keyPressEvent -> {
+            if (keyPressEvent.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+                delegate.onNewLineAdded(editorWidget.getDocument().getCursorPosition().getLine());
             }
-        });
+        }, KeyUpEvent.getType());
     }
 
     @Override

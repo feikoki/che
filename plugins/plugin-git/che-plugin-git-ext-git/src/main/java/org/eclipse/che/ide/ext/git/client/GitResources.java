@@ -37,10 +37,6 @@ public interface GitResources extends ClientBundle {
 
     interface AddedCSS extends CssResource{
         String markAdded();
-
-        String inactive();
-
-        String active();
     }
 
     @Source({"importer/page/GitImporterPage.css", "org/eclipse/che/ide/api/ui/style.css"})

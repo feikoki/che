@@ -10,6 +10,12 @@
  *******************************************************************************/
 package org.eclipse.che.ide.api.vcs;
 
+import elemental.dom.Element;
+
 public interface VcsMarkRender {
     void addVcsMark(int lineNumber);
+
+    void handleEnter(int line);
+
+    void clearMarks();
 }

@@ -15,6 +15,7 @@ import elemental.dom.Element;
 import org.eclipse.che.ide.api.editor.gutter.Gutter;
 import org.eclipse.che.ide.api.editor.gutter.Gutters;
 import org.eclipse.che.ide.editor.orion.client.jso.ModelChangedEventOverlay;
+import org.eclipse.che.ide.editor.orion.client.jso.OrionAnnotationIteratorOverlay;
 import org.eclipse.che.ide.editor.orion.client.jso.OrionAnnotationModelOverlay;
 import org.eclipse.che.ide.editor.orion.client.jso.OrionAnnotationOverlay;
 import org.eclipse.che.ide.editor.orion.client.jso.OrionEditorOverlay;
