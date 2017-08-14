@@ -14,6 +14,7 @@ import org.eclipse.che.api.git.shared.Branch;
 import org.eclipse.che.api.git.shared.BranchListMode;
 import org.eclipse.che.api.git.shared.CheckoutRequest;
 import org.eclipse.che.api.git.shared.DiffType;
+import org.eclipse.che.api.git.shared.Edition;
 import org.eclipse.che.api.git.shared.LogResponse;
 import org.eclipse.che.api.git.shared.MergeResult;
 import org.eclipse.che.api.git.shared.PullResponse;
@@ -348,6 +349,8 @@ public interface GitServiceClient {
                          int renameLimit,
                          String commitA,
                          boolean cached);
+
+    Promise<List<Edition>> getEditions(Path project, String file);
 
     /**
      * Get the file content from specified revision or branch.

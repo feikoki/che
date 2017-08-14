@@ -15,10 +15,43 @@
     left: -14px;
     right: 9px;
     height: 15px;
-    background-color: green;
+    background-color: #428046;
 }
 
 .markAdded {
+    position: relative;
+    font-size: 11px;
+    line-height: 15px;
+}
+
+.markModified:before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -14px;
+    right: 9px;
+    height: 15px;
+    background-color: #2b5da0;
+}
+
+.markModified {
+    position: relative;
+    font-size: 11px;
+    line-height: 15px;
+}
+
+.markDeleted:before {
+    content: "";
+    position: absolute;
+    top: 7px;
+    z-index: 1;
+    left: -13px;
+    border-bottom: 6px solid transparent;
+    border-top: 6px solid transparent;
+    border-left: 6px solid #bfc6ce;
+}
+
+.markDeleted {
     position: relative;
     font-size: 11px;
     line-height: 15px;

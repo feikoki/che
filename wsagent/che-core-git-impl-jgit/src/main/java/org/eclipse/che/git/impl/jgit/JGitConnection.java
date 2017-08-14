@@ -198,6 +198,7 @@ import static org.eclipse.che.dto.server.DtoFactory.newDto;
 import static org.eclipse.jgit.api.RebaseResult.Status.STOPPED;
 import static org.eclipse.jgit.api.RebaseResult.Status.UNCOMMITTED_CHANGES;
 import static org.eclipse.jgit.api.RebaseResult.Status.UP_TO_DATE;
+import static org.eclipse.jgit.diff.Edit.Type.DELETE;
 
 /**
  * @author Andrey Parfonov
@@ -679,7 +680,7 @@ class JGitConnection implements GitConnection {
             if (optional.isPresent()) {
                 EditList edits = formatter.toFileHeader(optional.get()).getHunks().get(0).toEditList();
                 return edits.stream()
-                            .map(edit -> newDto(Edition.class).withBeginLine(edit.getBeginB() + 1)
+                            .map(edit -> newDto(Edition.class).withBeginLine(DELETE.equals(edit.getType()) ? edit.getBeginB() : edit.getBeginB() + 1)
                                                               .withEndLine(edit.getEndB())
                                                               .withType(edit.getType().toString()))
                             .collect(toList());

@@ -10,17 +10,29 @@
  *******************************************************************************/
 package org.eclipse.che.ide.ext.git.client;
 
+import com.google.web.bindery.event.shared.EventBus;
+
 import org.eclipse.che.api.core.jsonrpc.commons.RequestHandlerConfigurator;
+import org.eclipse.che.api.git.shared.Edition;
+import org.eclipse.che.api.git.shared.GitChangeEventDto;
 import org.eclipse.che.api.git.shared.Status;
-import org.eclipse.che.api.project.shared.dto.event.GitChangeEventDto;
+import org.eclipse.che.api.promises.client.Operation;
+import org.eclipse.che.api.promises.client.OperationException;
+import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.ide.api.app.AppContext;
 import org.eclipse.che.ide.api.editor.EditorAgent;
-import org.eclipse.che.ide.api.notification.NotificationManager;
+import org.eclipse.che.ide.api.editor.EditorOpenedEvent;
+import org.eclipse.che.ide.api.editor.EditorOpenedEventHandler;
+import org.eclipse.che.ide.api.git.GitServiceClient;
 import org.eclipse.che.ide.api.parts.EditorMultiPartStack;
 import org.eclipse.che.ide.api.parts.EditorTab;
 import org.eclipse.che.ide.api.resources.File;
 import org.eclipse.che.ide.api.resources.Resource;
+import org.eclipse.che.ide.api.vcs.HasVcsMarkRender;
+import org.eclipse.che.ide.api.vcs.VcsMarkRender;
 import org.eclipse.che.ide.api.vcs.VcsStatus;
+import org.eclipse.che.ide.editor.orion.client.events.NewLineAddedEvent;
+import org.eclipse.che.ide.editor.orion.client.events.OnNewLineAddedHandler;
 import org.eclipse.che.ide.part.explorer.project.ProjectExplorerPresenter;
 import org.eclipse.che.ide.resource.Path;
 import org.eclipse.che.ide.resources.tree.FileNode;
@@ -30,6 +42,8 @@ import org.eclipse.che.ide.ui.smartTree.Tree;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
+
+import java.util.List;
 
 import static org.eclipse.che.ide.api.vcs.VcsStatus.ADDED;
 import static org.eclipse.che.ide.api.vcs.VcsStatus.MODIFIED;
@@ -51,6 +65,8 @@ public class GitChangesHandler {
 
     @Inject
     public GitChangesHandler(RequestHandlerConfigurator configurator,
+                             EventBus eventBus,
+                             GitServiceClient gitServiceClient,
                              AppContext appContext,
                              Provider<EditorAgent> editorAgentProvider,
                              Provider<ProjectExplorerPresenter> projectExplorerPresenterProvider,
@@ -71,6 +87,23 @@ public class GitChangesHandler {
                 });
             }
         });
+
+        eventBus.addHandler(EditorOpenedEvent.TYPE,
+                            event -> ((HasVcsMarkRender)event.getEditor().getView().asWidget().get)
+                                    .getOrCreateVcsMarkRender()
+                                    .then(render -> {
+                                        gitServiceClient.getEditions(event.getFile()
+                                                                          .getLocation()
+                                                                          .uptoSegment(1),
+                                                                     event.getFile()
+                                                                          .getLocation()
+                                                                          .removeFirstSegments(1)
+                                                                          .toString())
+                                                        .then(edition -> {
+                                                            render.clearMarks();
+                                                            handleEdition(edition, render);
+                                                        });
+                                    }));
 
         configureHandler(configurator);
     }
@@ -118,23 +151,31 @@ public class GitChangesHandler {
 
         editorAgentProvider.get()
                            .getOpenedEditors()
-                           .forEach(editor -> {
+                           .forEach(editor -> ((HasVcsMarkRender)editor).getOrCreateVcsMarkRender()
+                                                                        .then(arg -> {
+                                                                            arg.clearMarks();
+                                                                            handleEdition(dto.getEditions(), arg);
+                                                                        }));
+    }
 
-                               ((HasVcsMarkRender)editor).getOrCreateVcsMarkRender().then(new Operation<VcsMarkRender>() {
-                                   @Override
-                                   public void apply(VcsMarkRender arg) throws OperationException {
-                                       arg.clearMarks();
-                                       dto.getEditions()
-                                          .stream()
-                                          .filter(edition -> "INSERT".equals(edition.getType()))
-                                          .forEach(edition -> {
-                                              for (int i = edition.getBeginLine(); i <= edition.getEndLine(); i++) {
-                                                  arg.addVcsMark(i);
-                                              }
-                                          });
-                                   }
-                               });
-                           });
+    private void handleEdition(List<Edition> editions, VcsMarkRender render) {
+        editions.forEach(edition -> {
+            for (int i = edition.getBeginLine(); i <= edition.getEndLine(); i++) {
+                switch (edition.getType()) {
+                    case "INSERT": {
+                        render.addVcsMarkAdded(i);
+                        continue;
+                    }
+                    case "REPLACE": {
+                        render.addVcsMarkModified(i);
+                        continue;
+                    }
+                    case "DELETE": {
+                        render.addVcsMarkDeleted(i);
+                    }
+                }
+            }
+        });
     }
 
     public void apply(String endpointId, Status status) {

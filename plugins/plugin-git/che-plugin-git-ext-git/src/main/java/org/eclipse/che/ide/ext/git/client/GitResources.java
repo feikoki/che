@@ -35,8 +35,12 @@ public interface GitResources extends ClientBundle {
         String spacing();
     }
 
-    interface AddedCSS extends CssResource{
+    interface AddedCSS extends CssResource {
         String markAdded();
+
+        String markModified();
+
+        String markDeleted();
     }
 
     @Source({"importer/page/GitImporterPage.css", "org/eclipse/che/ide/api/ui/style.css"})
@@ -44,6 +48,7 @@ public interface GitResources extends ClientBundle {
 
     @Source({"git.css", "org/eclipse/che/ide/api/ui/style.css"})
     GitCSS gitCSS();
+
     @Source({"added.css", "org/eclipse/che/ide/api/ui/style.css"})
     AddedCSS addedCSS();
 

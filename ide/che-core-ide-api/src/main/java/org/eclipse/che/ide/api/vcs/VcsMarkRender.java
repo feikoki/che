@@ -13,7 +13,11 @@ package org.eclipse.che.ide.api.vcs;
 import elemental.dom.Element;
 
 public interface VcsMarkRender {
-    void addVcsMark(int lineNumber);
+    void addVcsMarkAdded(int lineNumber);
+
+    void addVcsMarkModified(int lineNumber);
+
+    void addVcsMarkDeleted(int lineNumber);
 
     void handleEnter(int line);
 

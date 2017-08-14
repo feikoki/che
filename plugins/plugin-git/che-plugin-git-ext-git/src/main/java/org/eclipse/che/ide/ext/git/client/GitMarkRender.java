@@ -11,11 +11,16 @@
 package org.eclipse.che.ide.ext.git.client;
 
 import elemental.dom.Element;
+import elemental.events.Event;
+import elemental.events.EventListener;
 import elemental.html.DivElement;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
+import org.eclipse.che.ide.api.editor.annotation.AnnotationGroup;
+//import org.eclipse.che.ide.api.editor.annotation.AnnotationGroupImpl;
+import org.eclipse.che.ide.api.editor.annotation.GutterAnnotationRenderer;
 import org.eclipse.che.ide.api.editor.document.Document;
 import org.eclipse.che.ide.api.editor.gutter.Gutter;
 import org.eclipse.che.ide.api.editor.texteditor.LineStyler;
@@ -44,8 +49,26 @@ public class GitMarkRender implements VcsMarkRender {
     }
 
     @Override
-    public void addVcsMark(int lineNumber) {
+    public void addVcsMarkAdded(int lineNumber) {
         DivElement inactiveBreakpointMark = Elements.createDivElement(resources.addedCSS().markAdded());
+//        inactiveBreakpointMark.addEventListener(Event.FOCUS, new EventListener() {
+//            @Override
+//            public void handleEvent(Event event) {
+//                inactiveBreakpointMark.
+//            }
+//        }, false);
+        hasGutter.addGutterItem(lineNumber - 1, VCS_MARKS_GUTTER, inactiveBreakpointMark);
+    }
+
+    @Override
+    public void addVcsMarkModified(int lineNumber) {
+        DivElement inactiveBreakpointMark = Elements.createDivElement(resources.addedCSS().markModified());
+        hasGutter.addGutterItem(lineNumber - 1, VCS_MARKS_GUTTER, inactiveBreakpointMark);
+    }
+
+    @Override
+    public void addVcsMarkDeleted(int lineNumber) {
+        DivElement inactiveBreakpointMark = Elements.createDivElement(resources.addedCSS().markDeleted());
         hasGutter.addGutterItem(lineNumber - 1, VCS_MARKS_GUTTER, inactiveBreakpointMark);
     }
 

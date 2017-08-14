@@ -22,6 +22,7 @@ import org.eclipse.che.ide.api.vcs.VcsMarkRender;
 import org.eclipse.che.ide.api.vcs.VcsMarkRenderFactory;
 import org.eclipse.che.ide.ext.git.client.GitChangesHandler;
 import org.eclipse.che.ide.ext.git.client.GitCheckoutHandler;
+import org.eclipse.che.ide.ext.git.client.GitMarkRender;
 import org.eclipse.che.ide.ext.git.client.add.AddToIndexView;
 import org.eclipse.che.ide.ext.git.client.add.AddToIndexViewImpl;
 import org.eclipse.che.ide.ext.git.client.branch.BranchView;

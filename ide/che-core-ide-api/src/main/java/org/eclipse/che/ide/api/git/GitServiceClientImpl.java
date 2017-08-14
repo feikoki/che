@@ -22,6 +22,7 @@ import org.eclipse.che.api.git.shared.CloneRequest;
 import org.eclipse.che.api.git.shared.CommitRequest;
 import org.eclipse.che.api.git.shared.Commiters;
 import org.eclipse.che.api.git.shared.DiffType;
+import org.eclipse.che.api.git.shared.Edition;
 import org.eclipse.che.api.git.shared.FetchRequest;
 import org.eclipse.che.api.git.shared.LogResponse;
 import org.eclipse.che.api.git.shared.MergeRequest;
@@ -77,6 +78,7 @@ public class GitServiceClientImpl implements GitServiceClient {
     private static final String COMMIT     = "/git/commit";
     private static final String CONFIG     = "/git/config";
     private static final String DIFF       = "/git/diff";
+    private static final String EDITIONS   = "/git/lines";
     private static final String FETCH      = "/git/fetch";
     private static final String INIT       = "/git/init";
     private static final String LOG        = "/git/log";
@@ -373,6 +375,12 @@ public class GitServiceClientImpl implements GitServiceClient {
                     commitA,
                     null,
                     cached).send(new StringUnmarshaller());
+    }
+
+    @Override
+    public Promise<List<Edition>> getEditions(Path project, String file) {
+        return asyncRequestFactory.createGetRequest(getWsAgentBaseUrl() + EDITIONS + "?projectPath=" + project + "&file=" + file)
+                                  .send(dtoUnmarshallerFactory.newListUnmarshaller(Edition.class));
     }
 
     private AsyncRequest diff(Path project,
