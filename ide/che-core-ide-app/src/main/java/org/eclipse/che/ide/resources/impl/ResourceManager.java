@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2012-2017 Codenvy, S.A.
+ * Copyright (c) 2012-2017 Red Hat, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Codenvy, S.A. - initial API and implementation
+ *   Red Hat, Inc. - initial API and implementation
  *******************************************************************************/
 package org.eclipse.che.ide.resources.impl;
 
@@ -75,6 +75,7 @@ import static com.google.common.base.Preconditions.checkState;
 import static com.google.common.base.Strings.isNullOrEmpty;
 import static java.lang.System.arraycopy;
 import static java.util.Arrays.copyOf;
+import static java.util.Arrays.stream;
 import static org.eclipse.che.ide.api.resources.Resource.FILE;
 import static org.eclipse.che.ide.api.resources.ResourceDelta.ADDED;
 import static org.eclipse.che.ide.api.resources.ResourceDelta.COPIED_FROM;
@@ -85,6 +86,7 @@ import static org.eclipse.che.ide.api.resources.ResourceDelta.REMOVED;
 import static org.eclipse.che.ide.api.resources.ResourceDelta.SYNCHRONIZED;
 import static org.eclipse.che.ide.api.resources.ResourceDelta.UPDATED;
 import static org.eclipse.che.ide.util.Arrays.add;
+import static org.eclipse.che.ide.util.Arrays.contains;
 import static org.eclipse.che.ide.util.Arrays.removeAll;
 import static org.eclipse.che.ide.util.NameUtils.checkFileName;
 import static org.eclipse.che.ide.util.NameUtils.checkFolderName;
@@ -683,7 +685,7 @@ public final class ResourceManager {
                     eventBus.fireEvent(new ResourceChangedEvent(new ResourceDeltaImpl(resource, REMOVED)));
                 }
 
-                final Resource[] updated = removeAll(outdated, reloaded, true);
+                final Resource[] updated = stream(reloaded).filter(resource -> contains(outdated, resource)).toArray(Resource[]::new);
                 for (Resource resource : updated) {
                     store.register(resource);
 
