@@ -34,7 +34,7 @@ public interface ClientServerEventService {
      * @param path
      *         the path to the specific file
      */
-    Promise<Void> sendFileTrackingStartEvent(String path);
+    Promise<Boolean> sendFileTrackingStartEvent(String path);
 
     /**
      * Sends event on server side which tells to stop tracking specific file
@@ -42,13 +42,13 @@ public interface ClientServerEventService {
      * @param path
      *         the path to the specific file
      */
-    Promise<Void> sendFileTrackingStopEvent(String path);
+    Promise<Boolean> sendFileTrackingStopEvent(String path);
 
     /** Sends event on server side which tells to suspend tracking all files registered for specific endpoint */
-    Promise<Void> sendFileTrackingSuspendEvent();
+    Promise<Boolean> sendFileTrackingSuspendEvent();
 
     /** Sends event on server side which tells to resume tracking all files registered for specific endpoint */
-    Promise<Void> sendFileTrackingResumeEvent();
+    Promise<Boolean> sendFileTrackingResumeEvent();
 
     /**
      * Sends event on server side which tells file that is being tracked should be moved (renamed)
@@ -58,5 +58,5 @@ public interface ClientServerEventService {
      * @param newPath
      *         the new path to the specific file
      */
-    Promise<Void> sendFileTrackingMoveEvent(String oldPath, String newPath);
+    Promise<Boolean> sendFileTrackingMoveEvent(String oldPath, String newPath);
 }

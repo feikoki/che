@@ -103,7 +103,7 @@ public class PreviewPresenterTest {
     @Mock
     private Promise<Void>               updateAfterRefactoringPromise;
     @Mock
-    private Promise<Void>               fileTrackingSuspendEventPromise;
+    private Promise<Boolean>            fileTrackingSuspendEventPromise;
     @Mock
     private Promise<Void>               handleMovingFilesPromise;
     @Mock
@@ -120,7 +120,7 @@ public class PreviewPresenterTest {
     @Captor
     private ArgumentCaptor<Operation<Void>>               changeEnableStateOperation;
     @Captor
-    private ArgumentCaptor<Operation<Void>>               clientServerSuspendOperation;
+    private ArgumentCaptor<Operation<Boolean>>            clientServerSuspendOperation;
 
     private PreviewPresenter presenter;
 

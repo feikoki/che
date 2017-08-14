@@ -17,9 +17,19 @@ import org.eclipse.che.api.promises.client.Operation;
 import org.eclipse.che.api.promises.client.OperationException;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.PromiseError;
+import org.eclipse.che.ide.api.dialogs.CancelCallback;
+import org.eclipse.che.ide.api.dialogs.ConfirmCallback;
+import org.eclipse.che.ide.api.dialogs.ConfirmDialog;
+import org.eclipse.che.ide.api.dialogs.DialogFactory;
+import org.eclipse.che.ide.api.dialogs.MessageDialog;
 import org.eclipse.che.ide.api.editor.EditorInput;
 import org.eclipse.che.ide.api.editor.EditorWithAutoSave;
+import org.eclipse.che.ide.api.editor.document.Document;
+import org.eclipse.che.ide.api.editor.link.HasLinkedMode;
+import org.eclipse.che.ide.api.editor.link.LinkedMode;
+import org.eclipse.che.ide.api.editor.link.LinkedModel;
 import org.eclipse.che.ide.api.editor.texteditor.HandlesUndoRedo;
+import org.eclipse.che.ide.api.editor.texteditor.TextEditor;
 import org.eclipse.che.ide.api.editor.texteditor.UndoableEditor;
 import org.eclipse.che.ide.api.event.FileEvent;
 import org.eclipse.che.ide.api.event.ng.ClientServerEventService;
@@ -42,16 +52,6 @@ import org.eclipse.che.ide.ext.java.shared.dto.refactoring.RefactoringResult;
 import org.eclipse.che.ide.ext.java.shared.dto.refactoring.RefactoringStatusEntry;
 import org.eclipse.che.ide.ext.java.shared.dto.refactoring.RenameRefactoringSession;
 import org.eclipse.che.ide.resource.Path;
-import org.eclipse.che.ide.api.editor.document.Document;
-import org.eclipse.che.ide.api.editor.link.HasLinkedMode;
-import org.eclipse.che.ide.api.editor.link.LinkedMode;
-import org.eclipse.che.ide.api.editor.link.LinkedModel;
-import org.eclipse.che.ide.api.editor.texteditor.TextEditor;
-import org.eclipse.che.ide.api.dialogs.CancelCallback;
-import org.eclipse.che.ide.api.dialogs.ConfirmCallback;
-import org.eclipse.che.ide.api.dialogs.DialogFactory;
-import org.eclipse.che.ide.api.dialogs.ConfirmDialog;
-import org.eclipse.che.ide.api.dialogs.MessageDialog;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -157,9 +157,9 @@ public class JavaRefactoringRenameTest {
     @Mock
     private Promise<Void>                     updateAfterRefactoringPromise;
     @Mock
-    private Promise<Void>                     fileTrackingSuspendEventPromise;
+    private Promise<Boolean>                  fileTrackingSuspendEventPromise;
     @Mock
-    private Promise<Void>                     fileTrackingResumeEventPromise;
+    private Promise<Boolean>                  fileTrackingResumeEventPromise;
     @Mock
     private Promise<Void>                     handleMovingFilesPromise;
 
@@ -172,9 +172,9 @@ public class JavaRefactoringRenameTest {
     @Captor
     private ArgumentCaptor<Operation<PromiseError>>             refactoringErrorCaptor;
     @Captor
-    private ArgumentCaptor<Operation<Void>>                     clientServerSuspendOperation;
+    private ArgumentCaptor<Operation<Boolean>>                  clientServerSuspendOperation;
     @Captor
-    private ArgumentCaptor<Operation<Void>>                     clientServerResumeOperation;
+    private ArgumentCaptor<Operation<Boolean>>                  clientServerResumeOperation;
     @Captor
     private ArgumentCaptor<Operation<Void>>                     updateAfterRefactoringOperation;
 

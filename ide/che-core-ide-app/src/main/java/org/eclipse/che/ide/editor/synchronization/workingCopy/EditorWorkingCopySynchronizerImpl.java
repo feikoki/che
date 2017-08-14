@@ -56,7 +56,7 @@ public class EditorWorkingCopySynchronizerImpl implements EditorWorkingCopySynch
                     .withConsumer(this::onError);
     }
 
-    public JsonRpcPromise<Void> synchronize(String filePath, String projectPath, DirtyRegion dirtyRegion) {
+    public JsonRpcPromise<Boolean> synchronize(String filePath, String projectPath, DirtyRegion dirtyRegion) {
         Type type = dirtyRegion.getType().equals(DirtyRegion.INSERT) ? INSERT : REMOVE;
         EditorChangesDto changes = dtoFactory.createDto(EditorChangesDto.class)
                                              .withType(type)
@@ -76,7 +76,7 @@ public class EditorWorkingCopySynchronizerImpl implements EditorWorkingCopySynch
                           .endpointId(ENDPOINT_ID)
                           .methodName(EDITOR_CONTENT_CHANGES_METHOD)
                           .paramsAsDto(changes)
-                          .sendAndReceiveResultAsEmpty();
+                          .sendAndReceiveResultAsBoolean();
     }
 
     private void onError(ServerError error) {

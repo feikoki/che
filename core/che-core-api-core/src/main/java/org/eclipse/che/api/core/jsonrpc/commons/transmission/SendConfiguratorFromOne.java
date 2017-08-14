@@ -194,11 +194,11 @@ public class SendConfiguratorFromOne<P> {
         return dispatcher.registerPromiseForListOfObjects(endpointId, requestId, Boolean.class, timeoutInMillis);
     }
 
-    public JsonRpcPromise<Void> sendAndReceiveResultAsEmpty() {
-        return sendAndReceiveResultAsEmpty(0);
+    public JsonRpcPromise<List<Double>> sendAndReceiveResultAsListOfDouble() {
+        return sendAndReceiveResultAsListOfDouble(0);
     }
 
-    public JsonRpcPromise<Void> sendAndReceiveResultAsEmpty(int timeoutInMillis) {
+    public JsonRpcPromise<List<Double>> sendAndReceiveResultAsListOfDouble(int timeoutInMillis) {
         final String requestId = transmitRequest();
 
         LOGGER.debug("Transmitting request: " +
@@ -207,9 +207,9 @@ public class SendConfiguratorFromOne<P> {
                      "method: " + method + ", " +
                      (pValue != null ? "params object class: " + pValue.getClass() + ", " : "") +
                      "params list value" + pValue + ", " +
-                     "result list items class: " + Void.class);
+                     "result list items class: " + Double.class);
 
-        return dispatcher.registerPromiseForSingleObject(endpointId, requestId, Void.class, timeoutInMillis);
+        return dispatcher.registerPromiseForListOfObjects(endpointId, requestId, Double.class, timeoutInMillis);
     }
 
     private void transmitNotification() {

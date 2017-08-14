@@ -29,5 +29,5 @@ public interface EditorWorkingCopySynchronizer {
      * @param dirtyRegion
      *         describes a document range which has been changed
      */
-    JsonRpcPromise<Void> synchronize(String filePath, String projectPath, DirtyRegion dirtyRegion);
+    JsonRpcPromise<Boolean> synchronize(String filePath, String projectPath, DirtyRegion dirtyRegion);
 }

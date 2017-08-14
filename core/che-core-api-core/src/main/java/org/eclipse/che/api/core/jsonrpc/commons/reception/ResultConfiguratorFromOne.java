@@ -49,28 +49,28 @@ public class ResultConfiguratorFromOne<P> {
         return new FunctionConfiguratorOneToMany<>(requestHandlerManager, method, pClass, rClass);
     }
 
-    public FunctionConfiguratorOneToOne<P, String> resultAsDtoString() {
+    public FunctionConfiguratorOneToMany<P, String> resultAsListOfString() {
         LOGGER.debug("Configuring incoming request result: " +
                      "method: " + method + ", " +
                      "result list items class: " + String.class);
 
-        return new FunctionConfiguratorOneToOne<>(requestHandlerManager, method, pClass, String.class);
+        return new FunctionConfiguratorOneToMany<>(requestHandlerManager, method, pClass, String.class);
     }
 
-    public FunctionConfiguratorOneToOne<P, Double> resultAsDtoDouble() {
+    public FunctionConfiguratorOneToMany<P, Double> resultAsListOfDouble() {
         LOGGER.debug("Configuring incoming request result: " +
                      "method: " + method + ", " +
                      "result list items class: " + Double.class);
 
-        return new FunctionConfiguratorOneToOne<>(requestHandlerManager, method, pClass, Double.class);
+        return new FunctionConfiguratorOneToMany<>(requestHandlerManager, method, pClass, Double.class);
     }
 
-    public FunctionConfiguratorOneToOne<P, Boolean> resultAsDtoBoolean() {
+    public FunctionConfiguratorOneToMany<P, Boolean> resultAsListOfBoolean() {
         LOGGER.debug("Configuring incoming request result: " +
                      "method: " + method + ", " +
                      "result list items class: " + Boolean.class);
 
-        return new FunctionConfiguratorOneToOne<>(requestHandlerManager, method, pClass, Boolean.class);
+        return new FunctionConfiguratorOneToMany<>(requestHandlerManager, method, pClass, Boolean.class);
     }
 
     public <R> FunctionConfiguratorOneToOne<P, R> resultAsDto(Class<R> rClass) {
@@ -81,14 +81,6 @@ public class ResultConfiguratorFromOne<P> {
                      "result object class: " + rClass);
 
         return new FunctionConfiguratorOneToOne<>(requestHandlerManager, method, pClass, rClass);
-    }
-
-    public FunctionConfiguratorOneToOne<P, Void> resultAsEmpty() {
-        LOGGER.debug("Configuring incoming request result: " +
-                     "method: " + method + ", " +
-                     "result object class: " + Void.class);
-
-        return new FunctionConfiguratorOneToOne<>(requestHandlerManager, method, pClass, Void.class);
     }
 
     public FunctionConfiguratorOneToOne<P, String> resultAsString() {

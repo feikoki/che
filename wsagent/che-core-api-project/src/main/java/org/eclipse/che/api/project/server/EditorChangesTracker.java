@@ -37,10 +37,10 @@ public class EditorChangesTracker {
         configurator.newConfiguration()
                     .methodName(INCOMING_METHOD)
                     .paramsAsDto(EditorChangesDto.class)
-                    .resultAsEmpty()
+                    .resultAsBoolean()
                     .withBiFunction((endpointId, changes) -> {
                         editorWorkingCopyManager.onEditorContentUpdated(endpointId, changes);
-                        return null;
+                        return true;
                     });
     }
 }

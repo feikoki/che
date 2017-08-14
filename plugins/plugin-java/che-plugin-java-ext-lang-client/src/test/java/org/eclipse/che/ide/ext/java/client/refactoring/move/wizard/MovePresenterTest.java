@@ -145,7 +145,7 @@ public class MovePresenterTest {
     @Mock
     private Promise<Void>                 updateAfterRefactoringPromise;
     @Mock
-    private Promise<Void>                 fileTrackingSuspendEventPromise;
+    private Promise<Boolean>                 fileTrackingSuspendEventPromise;
     @Mock
     private Promise<Void>                 handleMovingFilesPromise;
     @Mock
@@ -168,7 +168,7 @@ public class MovePresenterTest {
     @Captor
     private ArgumentCaptor<Operation<PromiseError>>                       promiseErrorCaptor;
     @Captor
-    private ArgumentCaptor<Operation<Void>>                               clientServerSuspendOperation;
+    private ArgumentCaptor<Operation<Boolean>>                               clientServerSuspendOperation;
     @Captor
     private ArgumentCaptor<Operation<Void>>                               updateAfterRefactoringOperation;
 

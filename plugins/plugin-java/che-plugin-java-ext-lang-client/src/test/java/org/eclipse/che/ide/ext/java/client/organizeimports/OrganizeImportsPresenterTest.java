@@ -92,7 +92,7 @@ public class OrganizeImportsPresenterTest {
     @Mock
     private Promise<String>               contentPromise;
     @Mock
-    private Promise<Void>                 fileTrackingSuspendEventPromise;
+    private Promise<Boolean>              fileTrackingSuspendEventPromise;
     @Mock
     private OrganizeImportResult          organizeImportResult;
     @Mock
@@ -105,7 +105,7 @@ public class OrganizeImportsPresenterTest {
     @Captor
     private ArgumentCaptor<Operation<String>>               contentCaptor;
     @Captor
-    private ArgumentCaptor<Operation<Void>>                 clientServerSuspendOperation;
+    private ArgumentCaptor<Operation<Boolean>>              clientServerSuspendOperation;
 
     private ConflictImportDTO conflict1;
     private ConflictImportDTO conflict2;
@@ -127,7 +127,7 @@ public class OrganizeImportsPresenterTest {
         when(relatedProject.getLocation()).thenReturn(Path.valueOf("/project"));
 
         when(clientServerEventService.sendFileTrackingSuspendEvent()).thenReturn(fileTrackingSuspendEventPromise);
-        when(fileTrackingSuspendEventPromise.then(Matchers.<Operation<Void>>anyObject())).thenReturn(fileTrackingSuspendEventPromise);
+        when(fileTrackingSuspendEventPromise.then(Matchers.<Operation<Boolean>>anyObject())).thenReturn(fileTrackingSuspendEventPromise);
 
         when(javaCodeAssistClient.organizeImports(anyString(), anyString())).thenReturn(importsPromise);
         when(importsPromise.then(Matchers.<Operation<OrganizeImportResult>>anyObject())).thenReturn(importsPromise);

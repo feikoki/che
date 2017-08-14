@@ -242,7 +242,7 @@ public class AutoSaveModeImpl implements AutoSaveMode, EditorSettingsChangedHand
         }
 
         editorWorkingCopySynchronizer.synchronize(filePath, projectPath, region)
-                                     .onSuccess(aVoid -> {
+                                     .onSuccess(() -> {
                                          syncLock = false;
                                          synchronizeWorkingCopy(filePath, projectPath);
                                      })
