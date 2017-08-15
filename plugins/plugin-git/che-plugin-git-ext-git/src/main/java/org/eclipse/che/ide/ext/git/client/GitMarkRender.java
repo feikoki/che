@@ -14,6 +14,7 @@ import elemental.dom.Element;
 import elemental.events.Event;
 import elemental.events.EventListener;
 import elemental.html.DivElement;
+import elemental.js.html.JsDivElement;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
@@ -51,12 +52,12 @@ public class GitMarkRender implements VcsMarkRender {
     @Override
     public void addVcsMarkAdded(int lineNumber) {
         DivElement inactiveBreakpointMark = Elements.createDivElement(resources.addedCSS().markAdded());
-//        inactiveBreakpointMark.addEventListener(Event.FOCUS, new EventListener() {
-//            @Override
-//            public void handleEvent(Event event) {
-//                inactiveBreakpointMark.
-//            }
-//        }, false);
+        ((Element)inactiveBreakpointMark).addEventListener(Event.CLICK, new EventListener() {
+            @Override
+            public void handleEvent(Event event) {
+                String a = "sdfhdhf";
+            }
+        });
         hasGutter.addGutterItem(lineNumber - 1, VCS_MARKS_GUTTER, inactiveBreakpointMark);
     }
 

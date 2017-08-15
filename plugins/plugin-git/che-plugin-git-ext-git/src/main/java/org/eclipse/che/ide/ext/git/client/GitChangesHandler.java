@@ -89,7 +89,7 @@ public class GitChangesHandler {
         });
 
         eventBus.addHandler(EditorOpenedEvent.TYPE,
-                            event -> ((HasVcsMarkRender)event.getEditor().getView().asWidget().get)
+                            event -> ((HasVcsMarkRender)event.getEditor())
                                     .getOrCreateVcsMarkRender()
                                     .then(render -> {
                                         gitServiceClient.getEditions(event.getFile()
