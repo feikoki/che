@@ -58,7 +58,7 @@ public final class QuirksConstants {
      * Safari 3*, Safari 4 beta, Firefox 3.0, IE7, IE8
      */
     public static final boolean USUALLY_LEFT_NORMALISES =
-            UserAgent.isWebkit() || UserAgent.isWebkit();
+            UserAgent.isWebkit();
 
     /**
      * Certain versions of webkit have a specific hack implemented in them, where
