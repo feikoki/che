@@ -245,6 +245,7 @@ public class Tooltip extends AutoHideComponent<AutoHideView<Void>, AutoHideCompo
                     Elements.addClassName(css.tooltipRight(), contentElement);
                 }
                 break;
+            default:
         }
     }
 

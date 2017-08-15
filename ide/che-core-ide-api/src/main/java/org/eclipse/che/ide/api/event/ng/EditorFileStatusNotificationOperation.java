@@ -102,6 +102,7 @@ public class EditorFileStatusNotificationOperation implements BiConsumer<String,
 
                 break;
             }
+            default:
         }
     }
 
