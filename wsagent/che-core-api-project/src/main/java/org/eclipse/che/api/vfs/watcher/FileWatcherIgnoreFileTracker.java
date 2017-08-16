@@ -219,7 +219,10 @@ public class FileWatcherIgnoreFileTracker {
 
         try (Stream<String> lines = lines(ignoreFilePath)) {
             Set<Path> projectExcludes = lines.filter(line -> !isNullOrEmpty(line.trim()))
-                                             .map(line -> projectPath.resolve(line.trim()))
+                                             .map(line -> {
+                                                 line = line.trim();
+                                                 return "/".equals(line) ? projectPath : projectPath.resolve(line);
+                                             })
                                              .filter(excludePath -> exists(excludePath))
                                              .collect(toSet());
 
@@ -321,7 +324,8 @@ public class FileWatcherIgnoreFileTracker {
                 Path ignoreFilePath = toNormalPath(root, projectLocation + FILE_WATCHER_IGNORE_FILE_PATH);
 
                 Set<String> excludesToWrite = groupedExcludes.computeIfAbsent(ignoreFilePath, k -> new HashSet<>());
-                excludesToWrite.add(projectPath.relativize(pathToExclude).toString());
+                String excludeToWrite = pathToExclude.equals(projectPath) ? "/" : projectPath.relativize(pathToExclude).toString();
+                excludesToWrite.add(excludeToWrite);
             }
         } catch (NotFoundException e) {
             String errorMessage = "Can not add path to File Watcher excludes: " + e.getLocalizedMessage();
